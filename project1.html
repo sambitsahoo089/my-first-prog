@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SpendSense — Track Your Vibe, Track Your Money</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #080c14;
+            --surface: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            --text: #f0f4ff;
+            --muted: rgba(240, 244, 255, 0.45);
+            --accent: #7cffa4;
+            --accent2: #5b8cff;
+            --accent3: #ff6b9d;
+            --accent4: #ffcc44;
+            --danger: #ff5b5b;
+            --card-bg: rgba(255, 255, 255, 0.035);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Animated Background ── */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.18;
+            animation: drift 18s ease-in-out infinite;
+        }
+
+        .blob1 {
+            width: 520px;
+            height: 520px;
+            background: #5b8cff;
+            top: -100px;
+            left: -120px;
+            animation-delay: 0s;
+        }
+
+        .blob2 {
+            width: 380px;
+            height: 380px;
+            background: #7cffa4;
+            top: 40%;
+            right: -80px;
+            animation-delay: -6s;
+        }
+
+        .blob3 {
+            width: 300px;
+            height: 300px;
+            background: #ff6b9d;
+            bottom: -80px;
+            left: 30%;
+            animation-delay: -12s;
+        }
+
+        @keyframes drift {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(40px, -30px) scale(1.06);
+            }
+
+            66% {
+                transform: translate(-30px, 40px) scale(0.96);
+            }
+        }
+
+        /* ── Layout ── */
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 32px 20px 80px;
+        }
+
+        /* ── Header ── */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            animation: fadeDown .6s ease both;
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.6rem;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .month-badge {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 8px 18px;
+            font-size: .85rem;
+            color: var(--muted);
+            font-weight: 500;
+            letter-spacing: .3px;
+            backdrop-filter: blur(12px);
+        }
+
+        /* ── Stats Row ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+            animation: fadeUp .6s .1s ease both;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 22px 24px;
+            backdrop-filter: blur(20px);
+            transition: border-color .3s, transform .3s;
+            cursor: default;
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .stat-value.income {
+            color: var(--accent);
+        }
+
+        .stat-value.expense {
+            color: var(--accent3);
+        }
+
+        .stat-value.balance {
+            color: var(--accent2);
+        }
+
+        .stat-sub {
+            font-size: .78rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── Main Grid ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+            animation: fadeUp .6s .2s ease both;
+        }
+
+        /* ── Glass Card base ── */
+        .glass {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            padding: 28px;
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -.2px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* ── Add Form ── */
+        .form-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: .78rem;
+            color: var(--muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .95rem;
+            padding: 12px 16px;
+            outline: none;
+            transition: border-color .25s, background .25s;
+            width: 100%;
+        }
+
+        .form-input::placeholder {
+            color: var(--muted);
+        }
+
+        .form-input:focus {
+            border-color: var(--accent2);
+            background: rgba(91, 140, 255, 0.07);
+        }
+
+        .type-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .type-btn {
+            padding: 11px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .25s;
+        }
+
+        .type-btn.active-income {
+            background: rgba(124, 255, 164, .12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .type-btn.active-expense {
+            background: rgba(255, 107, 157, .12);
+            border-color: var(--accent3);
+            color: var(--accent3);
+        }
+
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .cat-chip {
+            padding: 8px 6px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: .78rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all .2s;
+        }
+
+        .cat-chip.selected {
+            border-color: var(--accent2);
+            background: rgba(91, 140, 255, .12);
+            color: var(--accent2);
+            font-weight: 600;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--accent2), #9b5cff);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 14px;
+            cursor: pointer;
+            letter-spacing: .3px;
+            transition: opacity .25s, transform .2s;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .add-btn:hover {
+            opacity: .88;
+            transform: translateY(-2px);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ── Transaction List ── */
+        .list-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .list-inner::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .list-inner::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .list-inner::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .tx-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            animation: slideIn .3s ease both;
+            transition: border-color .2s, background .2s;
+            position: relative;
+        }
+
+        .tx-item:hover {
+            border-color: var(--border-hover);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tx-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .tx-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .tx-name {
+            font-weight: 600;
+            font-size: .92rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tx-cat {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .tx-amount {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .tx-amount.inc {
+            color: var(--accent);
+        }
+
+        .tx-amount.exp {
+            color: var(--accent3);
+        }
+
+        .tx-del {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+            border-radius: 6px;
+            transition: color .2s, background .2s;
+            line-height: 1;
+        }
+
+        .tx-del:hover {
+            color: var(--danger);
+            background: rgba(255, 91, 91, .1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 40px 0;
+            font-size: .9rem;
+        }
+
+        .empty-state .emoji {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ── Donut Chart ── */
+        .chart-wrap {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #donutCanvas {
+            width: 180px !important;
+            height: 180px !important;
+        }
+
+        .donut-center {
+            position: absolute;
+            text-align: center;
+            pointer-events: none;
+            top: 90px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .donut-label {
+            font-size: .7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .donut-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .legend {
+            margin-top: 18px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .legend-name {
+            font-size: .82rem;
+            color: var(--muted);
+            flex: 1;
+        }
+
+        .legend-pct {
+            font-family: 'Syne', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+        }
+
+        /* ── Progress bars ── */
+        .progress-section {
+            margin-top: 20px;
+        }
+
+        .progress-row {
+            margin-bottom: 14px;
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .progress-cat {
+            font-size: .8rem;
+            color: var(--muted);
+        }
+
+        .progress-amt {
+            font-size: .8rem;
+            font-weight: 600;
+        }
+
+        .progress-track {
+            height: 6px;
+            background: rgba(255, 255, 255, .06);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width .8s cubic-bezier(.25, .8, .25, 1);
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(20, 28, 48, .95);
+            border: 1px solid var(--border-hover);
+            border-radius: 100px;
+            padding: 12px 24px;
+            font-size: .88rem;
+            font-weight: 500;
+            color: var(--text);
+            backdrop-filter: blur(20px);
+            transition: transform .35s cubic-bezier(.34, 1.56, .64, 1);
+            z-index: 999;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media(max-width: 760px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-canvas">
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+        <div class="blob blob3"></div>
+    </div>
+
+    <div class="wrapper">
+
+        <!-- Header -->
+        <header>
+            <div class="logo">Spend<span>Sense</span></div>
+            <div class="month-badge" id="monthLabel">— 2025</div>
+        </header>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">💰 Total Income</div>
+                <div class="stat-value income" id="statIncome">₹0</div>
+                <div class="stat-sub" id="incomeCount">0 transactions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">💸 Total Spent</div>
+                <div class="stat-value expense" id="statExpense">₹0</div>
+                <div class="stat-sub" id="expenseCount">0 transactions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">🏦 Balance</div>
+                <div class="stat-value balance" id="statBalance">₹0</div>
+                <div class="stat-sub" id="balanceSub">All clear</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+
+            <!-- Left: Add + List -->
+            <div style="display:flex;flex-direction:column;gap:20px;">
+
+                <!-- Add Transaction -->
+                <div class="glass">
+                    <div class="card-title">
+                        <span class="dot" style="background:var(--accent2)"></span>
+                        Add Transaction
+                    </div>
+                    <div class="form-col">
+
+                        <!-- Name -->
+                        <div class="input-group">
+                            <label>Description</label>
+                            <input class="form-input" id="txName" placeholder="e.g. Swiggy, Salary, Rent…" />
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="input-group">
+                            <label>Amount (₹)</label>
+                            <input class="form-input" id="txAmount" type="number" placeholder="0.00" />
+                        </div>
+
+                        <!-- Type -->
+                        <div class="input-group">
+                            <label>Type</label>
+                            <div class="type-toggle">
+                                <button class="type-btn active-income" id="btnIncome" onclick="setType('income')">+
+                                    Income</button>
+                                <button class="type-btn" id="btnExpense" onclick="setType('expense')">− Expense</button>
+                            </div>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="input-group">
+                            <label>Category</label>
+                            <div class="cat-grid" id="catGrid"></div>
+                        </div>
+
+                        <button class="add-btn" onclick="addTransaction()">Add to SpendSense ✦</button>
+                    </div>
+                </div>
+
+                <!-- Transaction List -->
+                <div class="glass list-section">
+                    <div class="card-title" style="justify-content:space-between;">
+                        <span style="display:flex;align-items:center;gap:8px;">
+                            <span class="dot" style="background:var(--accent)"></span>
+                            Transactions
+                        </span>
+                        <button onclick="clearAll()"
+                            style="background:rgba(255,91,91,.1);border:1px solid rgba(255,91,91,.25);color:#ff5b5b;border-radius:8px;padding:4px 12px;font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .2s;">Clear
+                            All</button>
+                    </div>
+                    <div class="list-inner" id="txList">
+                        <div class="empty-state" id="emptyState">
+                            <span class="emoji">🤷</span>
+                            No transactions yet, bro. Add one above!
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Chart + Breakdown -->
+            <div style="display:flex;flex-direction:column;gap:20px;">
+
+                <!-- Donut Chart -->
+                <div class="glass">
+                    <div class="card-title">
+                        <span class="dot" style="background:var(--accent3)"></span>
+                        Spending Breakdown
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="donutCanvas" width="180" height="180"></canvas>
+                        <div class="donut-center">
+                            <div class="donut-label">Total Spent</div>
+                            <div class="donut-val" id="donutVal">₹0</div>
+                        </div>
+                        <div class="legend" id="chartLegend"></div>
+                    </div>
+                </div>
+
+                <!-- Progress Bars -->
+                <div class="glass">
+                    <div class="card-title">
+                        <span class="dot" style="background:var(--accent4)"></span>
+                        Category Spend
+                    </div>
+                    <div class="progress-section" id="progressSection">
+                        <div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px 0;">
+                            Add expenses to see breakdown 📊
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ── Data ──
+        const CATS = [
+            { key: 'food', label: '🍕 Food', color: '#ff6b9d' },
+            { key: 'transport', label: '🚗 Travel', color: '#5b8cff' },
+            { key: 'shopping', label: '🛍 Shop', color: '#ffcc44' },
+            { key: 'bills', label: '📋 Bills', color: '#ff9955' },
+            { key: 'health', label: '💊 Health', color: '#7cffa4' },
+            { key: 'other', label: '✦ Other', color: '#b48fff' },
+        ];
+
+        let txType = 'income';
+        let txCat = 'other';
+        let transactions = JSON.parse(localStorage.getItem('spendsense_tx') || '[]');
+
+        // ── Init ──
+        function init() {
+            const now = new Date();
+            document.getElementById('monthLabel').textContent =
+                now.toLocaleString('default', { month: 'long' }) + ' ' + now.getFullYear();
+
+            const catGrid = document.getElementById('catGrid');
+            catGrid.innerHTML = '';
+            CATS.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'cat-chip' + (c.key === txCat ? ' selected' : '');
+                btn.textContent = c.label;
+                btn.onclick = () => selectCat(c.key);
+                btn.id = 'cat_' + c.key;
+                catGrid.appendChild(btn);
+            });
+
+            render();
+        }
+
+        // ── Type / Cat ──
+        function setType(t) {
+            txType = t;
+            document.getElementById('btnIncome').className = 'type-btn' + (t === 'income' ? ' active-income' : '');
+            document.getElementById('btnExpense').className = 'type-btn' + (t === 'expense' ? ' active-expense' : '');
+        }
+
+        function selectCat(k) {
+            txCat = k;
+            CATS.forEach(c => {
+                const el = document.getElementById('cat_' + c.key);
+                if (el) el.className = 'cat-chip' + (c.key === k ? ' selected' : '');
+            });
+        }
+
+        // ── Add ──
+        function addTransaction() {
+            const name = document.getElementById('txName').value.trim();
+            const amount = parseFloat(document.getElementById('txAmount').value);
+
+            if (!name) { showToast('⚠️ Description can\'t be empty bro!'); return; }
+            if (!amount || amount <= 0) { showToast('⚠️ Enter a valid amount!'); return; }
+
+            transactions.unshift({
+                id: Date.now(),
+                name, amount,
+                type: txType,
+                cat: txCat,
+                date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+            });
+
+            save();
+            render();
+
+            document.getElementById('txName').value = '';
+            document.getElementById('txAmount').value = '';
+
+            showToast(txType === 'income' ? '✅ Income added!' : '✅ Expense tracked!');
+        }
+
+        // ── Delete ──
+        function deleteTx(id) {
+            transactions = transactions.filter(t => t.id !== id);
+            save(); render();
+            showToast('🗑 Deleted!');
+        }
+
+        function clearAll() {
+            if (!transactions.length) return;
+            transactions = [];
+            save(); render();
+            showToast('🧹 All cleared!');
+        }
+
+        // ── Save ──
+        function save() {
+            localStorage.setItem('spendsense_tx', JSON.stringify(transactions));
+        }
+
+        // ── Render ──
+        function render() {
+            renderStats();
+            renderList();
+            renderChart();
+            renderProgress();
+        }
+
+        function fmt(n) {
+            return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        function renderStats() {
+            const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const balance = income - expense;
+
+            document.getElementById('statIncome').textContent = fmt(income);
+            document.getElementById('statExpense').textContent = fmt(expense);
+            document.getElementById('statBalance').textContent = fmt(balance);
+            document.getElementById('incomeCount').textContent = transactions.filter(t => t.type === 'income').length + ' transactions';
+            document.getElementById('expenseCount').textContent = transactions.filter(t => t.type === 'expense').length + ' transactions';
+            document.getElementById('balanceSub').textContent = balance >= 0 ? '🟢 You\'re good!' : '🔴 Over budget!';
+            document.getElementById('donutVal').textContent = fmt(expense);
+        }
+
+        function renderList() {
+            const list = document.getElementById('txList');
+
+            if (!transactions.length) {
+                list.innerHTML = `
+      <div class="empty-state" id="emptyState">
+        <span class="emoji">🤷</span>
+        No transactions yet, bro. Add one above!
+      </div>`;
+                return;
+            }
+
+            list.innerHTML = transactions.map(t => {
+                const cat = CATS.find(c => c.key === t.cat) || CATS[5];
+                return `
+      <div class="tx-item">
+        <div class="tx-icon" style="background:${cat.color}22">${cat.label.split(' ')[0]}</div>
+        <div class="tx-meta">
+          <div class="tx-name">${escHtml(t.name)}</div>
+          <div class="tx-cat">${cat.label.split(' ')[1]} · ${t.date}</div>
+        </div>
+        <div class="tx-amount ${t.type === 'income' ? 'inc' : 'exp'}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</div>
+        <button class="tx-del" onclick="deleteTx(${t.id})" title="Delete">✕</button>
+      </div>`;
+            }).join('');
+        }
+
+        function escHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // ── Donut Chart ──
+        function renderChart() {
+            const canvas = document.getElementById('donutCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            const expenses = transactions.filter(t => t.type === 'expense');
+            const total = expenses.reduce((s, t) => s + t.amount, 0);
+
+            const catTotals = CATS.map(c => ({
+                ...c,
+                total: expenses.filter(e => e.cat === c.key).reduce((s, t) => s + t.amount, 0)
+            })).filter(c => c.total > 0);
+
+            const cx = W / 2, cy = H / 2, outerR = 76, innerR = 50;
+
+            if (!catTotals.length) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+                ctx.lineWidth = outerR - innerR;
+                ctx.stroke();
+                document.getElementById('chartLegend').innerHTML = '';
+                return;
+            }
+
+            let startAngle = -Math.PI / 2;
+            const gap = 0.04;
+
+            catTotals.forEach(c => {
+                const slice = (c.total / total) * (Math.PI * 2 - gap * catTotals.length);
+                ctx.beginPath();
+                ctx.arc(cx, cy, (outerR + innerR) / 2, startAngle + gap / 2, startAngle + slice + gap / 2);
+                ctx.strokeStyle = c.color;
+                ctx.lineWidth = outerR - innerR;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                startAngle += slice + gap;
+            });
+
+            document.getElementById('chartLegend').innerHTML = catTotals.map(c => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${c.color}"></div>
+      <span class="legend-name">${c.label}</span>
+      <span class="legend-pct" style="color:${c.color}">${Math.round(c.total / total * 100)}%</span>
+    </div>
+  `).join('');
+        }
+
+        // ── Progress Bars ──
+        function renderProgress() {
+            const expenses = transactions.filter(t => t.type === 'expense');
+            const total = expenses.reduce((s, t) => s + t.amount, 0);
+
+            const catTotals = CATS.map(c => ({
+                ...c,
+                total: expenses.filter(e => e.cat === c.key).reduce((s, t) => s + t.amount, 0)
+            })).filter(c => c.total > 0).sort((a, b) => b.total - a.total);
+
+            const section = document.getElementById('progressSection');
+
+            if (!catTotals.length) {
+                section.innerHTML = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px 0;">Add expenses to see breakdown 📊</div>';
+                return;
+            }
+
+            section.innerHTML = catTotals.map(c => {
+                const pct = total ? Math.round(c.total / total * 100) : 0;
+                return `
+      <div class="progress-row">
+        <div class="progress-meta">
+          <span class="progress-cat">${c.label}</span>
+          <span class="progress-amt" style="color:${c.color}">${fmt(c.total)}</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:${pct}%;background:${c.color};"></div>
+        </div>
+      </div>`;
+            }).join('');
+        }
+
+        // ── Toast ──
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        // ── Start ──
+        init();
+    </script>
+</body>
+
+</html>
